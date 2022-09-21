@@ -2,6 +2,11 @@ const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const Campground = require('./models/campground')
+
+// this is used for put or delete request npm i method-override
+const methodOverride = require('method-override')
+app.use(methodOverride('_method'))  
+
 mongoose.connect('mongodb://localhost:27017/yelp-camp', {
     useNewUrlParser: true, 
     // useCreateIndex: true, 
@@ -39,6 +44,7 @@ app.get('/campgrounds/new', (req,res) => {
 // without this parsing the body data is not workng
 app.use(express.urlencoded({extended:true}))
 
+
 app.post('/campgrounds', async (req,res)=>{
     const campground = new Campground(req.body.campground)
     await campground.save()
@@ -50,6 +56,16 @@ app.get('/campgrounds/:id', async(req,res)=>{
     res.render('campgrounds/show', {campground})
 })
 
+app.get('/campgrounds/:id/edit', async(req,res)=>{
+    const campground = await   Campground.findById(req.params.id)
+    res.render('campgrounds/edit', {campground})
+})
+
+app.put('/campgrounds/:id/', async(req,res) => {
+    const {id} = req.params
+    const campground = await    Campground.findByIdAndUpdate(id,{...req.body.campground})
+    res.redirect(`/campgrounds/${campground._id}`)
+})
 
 app.listen(3000, () => {
     console.log('App is running on port 3000')

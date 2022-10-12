@@ -1,28 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detailed page</title>
-</head>
-<body>
- 
-    <h1><%= campground.title %></h1>
-    <h1><%= campground.location %></h1>
+<% layout('./layouts/boilerplate') %>
 
+<div class="row">
+    <div class="col-4 offset-4">
+        <div class="card" style="width: 18rem;">
+            <img src="<%= campground.image%>" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title"><%= campground.title %></h5>
+              <p class="card-text"><%= campground.description %></p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item text-muted"><%= campground.location %></li>
+              <li class="list-group-item">$<%= campground.price %>/night</li>
+           
+            </ul>
+            <div class="card-body">
+              <a href="/campgrounds/<%=campground._id %>/edit" class="card-link btn btn-warning">Edit</a>
+              <form action="/campgrounds/<%=campground._id%>?_method=DELETE"  method="POST" class="d-inline">
+                <button class="btn btn-danger">Delete</button>
+            </form>
+            </div>
+            <div class="card-footer text-muted">
+                3 days ago
+            </div>
+          </div>
+    </div>
+</div>
+
+
+
+
+    <!-- <h1><%= campground.title %></h1>
+    <h1><%= campground.location %></h1>
+    <p><%= campground.description %></p>
+    <p><%= campground.price %></p>
+    <img src="<%= campground.image%>" alt="image not fond">
     <a href="/campgrounds/<%=campground._id %>/edit">Edit</a>
     <div>
         <br>
         <br>
-        <form action="/campgrounds/<%=campground._id%>?_method=DELETE" method="POST">
-            <button>Delete</button>
-        </form>
-    </div>
+
+    </div> -->
 
     <footer>
         <a href="/campgrounds">All campground</a>
     </footer>
     
-</body>
-</html>

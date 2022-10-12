@@ -2,16 +2,23 @@ const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const Campground = require('./models/campground')
+const ejsMate = require('ejs-mate')
 
 // this is used for put or delete request npm i method-override
 const methodOverride = require('method-override')
 app.use(methodOverride('_method'))  
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp', {
-    useNewUrlParser: true, 
-    // useCreateIndex: true, 
-    useUnifiedTopology: true
-})
+const uri = "mongodb+srv://vishwajeet:vishwajeet@quizzapp.8cryywh.mongodb.net/test"
+// const uri = "mongodb://localhost:27017"
+async function connect(){
+    try{
+        await mongoose.connect(uri)
+        console.log('connected to online MDB')
+    }catch(error){
+        console.log(error)
+    }
+}
+connect()
 
 const db = mongoose.connection
 db.on('error', console.error.bind(console, 'connection error:'))
@@ -20,6 +27,8 @@ db.once('open',() =>{
 })
 
 const path = require('path')
+
+app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 

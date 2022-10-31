@@ -1,7 +1,7 @@
 <% layout('./layouts/boilerplate') %>
 
 <div class="row">
-    <div class="col-4 offset-4">
+    <div class="col-6">
         <div class="card" style="width: 18rem;">
             <img src="<%= campground.image%>" class="card-img-top" alt="...">
             <div class="card-body">
@@ -22,24 +22,45 @@
             <div class="card-footer text-muted">
                 3 days ago
             </div>
+          </div>  
+          
+    </div>
+    <div class="col-6">
+      <h2>Leave A ReView.</h2>
+          <form action="/campgrounds/<%=campground._id%>/reviews" method="post" class="mb-3 validated-form" novalidate>
+            <div class="mb-3">
+              <label for="range" class="form-label">Rating</label>
+              <input type="range" name="review[rating]" id="range" class="form-range" min="1" max="5" name="" id="">
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="review">Review</label>
+              <textarea class="form-control" name="review[body]" id="review" cols="30" rows="1" ></textarea>
+              <div class="valid-feedback">
+                This is good
+              </div>
+            </div>
+            <button class="btn btn-success">Submit</button>
+          </form>
+          <% for (let review of campground.reviews){%>
+          <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">Rating: <%=review.rating%></h5>
+              <p>  <%= review.body %></p>
+
+              <form action="/campgrounds/<%=campground._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                  <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+
+            </div>
           </div>
+          <%}%>
     </div>
 </div>
 
 
 
 
-    <!-- <h1><%= campground.title %></h1>
-    <h1><%= campground.location %></h1>
-    <p><%= campground.description %></p>
-    <p><%= campground.price %></p>
-    <img src="<%= campground.image%>" alt="image not fond">
-    <a href="/campgrounds/<%=campground._id %>/edit">Edit</a>
-    <div>
-        <br>
-        <br>
 
-    </div> -->
 
     <footer>
         <a href="/campgrounds">All campground</a>

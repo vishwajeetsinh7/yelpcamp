@@ -2,7 +2,7 @@
  <% layout('./layouts/boilerplate') %>
  <h1>All campgrounds</h1>
     <div>
-        <a href="/campgrounds/new">add campground</a>
+        <a href="/campgrounds/new">add campground </a>
     </div>
     <ul>
         <% for(let campground of campgrounds){%>
@@ -23,7 +23,7 @@
                                 <small class="text-muted"><%=campground.location%></small>
                                 <span>Price: $<%=campground.price%></span>
                             </p>
-                            <a href="campgrounds/<%=campground._id%>" class="btn btn-primary">View <%=campground.title%></a>
+                            <a href="/campgrounds/<%=campground._id%>" class="btn btn-primary">View <%=campground.title%></a>
                             
                         </div>
                     </div>

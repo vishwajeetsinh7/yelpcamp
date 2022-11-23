@@ -1,25 +1,27 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
-
 const ejsMate = require('ejs-mate')
 const ExpressError = require('./utils/ExpressError')
-
 const session = require('express-session')
 const flash = require('connect-flash')
-
 const port = process.env.PORT || 3000 
-
-
-
-const campgrounds = require('./routes/campground')
-const reviews = require('./routes/reviews')
+const campgroundRoutes = require('./routes/campground')
+const reviewRoutes = require('./routes/reviews')
+const userRoutes  = require('./routes/users')
 
 
 const Joi = require('joi')
-// this is used for put or delete request npm i method-override
 const methodOverride = require('method-override')
 app.use(methodOverride('_method'))  
+
+const User = require('./models/user')
+
+// used for passport.js
+const passport = require('passport')
+const localStrategy = require('passport-local')
+
+
 
 
 
@@ -66,6 +68,17 @@ const sessionConfig = {
     }
 }
 app.use(session(sessionConfig))
+// make sure that u use sessioconfig before it
+app.use(passport.initialize())
+app.use(passport.session())
+
+passport.use(new localStrategy(User.authenticate))
+// store user in session
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+
+
+
 app.use(flash())
 
     // create a middleware for each and every route on ./app.js
@@ -75,9 +88,10 @@ app.use(flash())
         next()
     })
 
+app.use('/', userRoutes)
+app.use('/campgrounds', campgroundRoutes)
+app.use('/campgrounds/:id/reviews', reviewRoutes)
 
-app.use('/campgrounds', campgrounds)
-app.use('/campgrounds/:id/reviews', reviews)
 
 
 app.get('/', (req, res) => {

@@ -70,9 +70,9 @@ const sessionConfig = {
 app.use(session(sessionConfig))
 // make sure that u use sessioconfig before it
 app.use(passport.initialize())
-app.use(passport.session())
+app.use(passport.session(session))
 
-passport.use(new localStrategy(User.authenticate))
+passport.use(new localStrategy(User.authenticate()))
 // store user in session
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())

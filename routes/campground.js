@@ -3,24 +3,14 @@ const catchAsync = require('../utils/catchAsync')
 const Campground = require('../models/campground')
 const ExpressError = require('../utils/ExpressError')
 const {campgroundSchema} = require('../schemas')
+const {isLoggedIn,validateCampground, isAuthor} = require('../middleware')
 const Joi = require('joi')
 
 
 const router = express.Router()
 
 
-const validateCampground = (req,res,next) =>{
 
-    const {error} = campgroundSchema.validate(req.body)
-    if(error){
-        const msg = error.details.map(el => el.message).join(',')
-        throw new ExpressError(msg, 400)
-    }
-    else{
-        next()
-    }
-
-}
 
 
 router.get('/', async(req,res) => {
@@ -28,22 +18,27 @@ router.get('/', async(req,res) => {
     res.render('campgrounds/index',{campgrounds})
 })
 
-router.get('/new', (req,res) => {
+router.get('/new', isLoggedIn,(req,res) => {
     res.render('campgrounds/new')
 })
 
-router.post('/', validateCampground, catchAsync(async (req,res,next)=>{
-
-    
+router.post('/', validateCampground, isLoggedIn, catchAsync(async (req,res,next)=>{
     // if(!req.body.campground) throw new ExpressError('Invalid CampGround data', 400)
     const campground = new Campground(req.body.campground)
+    campground.author = req.user._id    
     await campground.save()
     req.flash('success', 'Successfully made a new campground!')
         res.redirect(`/campgrounds/${campground._id}`)
 }))
 
 router.get('/:id', catchAsync(async(req,res)=>{
-    const campground = await Campground.findById(req.params.id).populate('reviews')
+    const campground = await Campground.findById(req.params.id).populate({
+        path: 'reviews', 
+        populate: {
+            path: 'author'
+        }
+    }).populate('author')
+    
     console.log(campground)
     if(!campground){
         req.flash('error', 'Canot find that campgroud')
@@ -52,26 +47,33 @@ router.get('/:id', catchAsync(async(req,res)=>{
     res.render('campgrounds/show', {campground})
 }))
  
-router.get('/:id/edit', catchAsync(async(req,res)=>{
-    const campground = await   Campground.findById(req.params.id)
+router.get('/:id/edit', isLoggedIn, catchAsync(async(req,res)=>{
+    const {id} = req.params
+    const campground = await Campground.findById(id)
+    // const camp = await   Campground.findById(req.params.id)
     if(!campground){
         req.flash('error', 'Canot find that campgroud')
         return res.redirect('/campgrounds')
     }
+    if(!campground.author.equals(req.user._id)){
+        req.flash('error', 'You do not have permission to do That')
+        return res.redirect(`/campgrounds/${id}`)
+    }
     res.render('campgrounds/edit', {campground})
 }))
 
-router.put('/:id/',validateCampground, catchAsync(async(req,res) => {
-    const {id} = req.params
-    const campground = await    Campground.findByIdAndUpdate(id,{...req.body.campground})
-    req.flash('success', 'Successfully updated Campground')
-    res.redirect(`/campgrounds/${campground._id}`)
-}))
+    router.put('/:id/' , isLoggedIn,validateCampground,isAuthor, catchAsync(async(req,res) => {
+        const {id} = req.params
 
-router.delete('/:id/', catchAsync(async(req,res) => {
+        const camp = await Campground.findByIdAndUpdate(id,{...req.body.campground})
+        req.flash('success', 'Successfully updated Campground')
+        res.redirect(`/campgrounds/${camp._id}`)
+    }))
+
+router.delete('/:id/', isLoggedIn,isAuthor, catchAsync(async(req,res) => {
     const {id} = req.params
-    const campground =   await Campground.findByIdAndDelete(id)
-    req.flash('success', `deleted ${campground.title} campground`)
+    const campgroud =   await Campground.findByIdAndDelete(id)
+    req.flash('success', `deleted ${campgroud.title} campground`)
     res.redirect('/campgrounds')
 
 }))

@@ -83,6 +83,11 @@ app.use(flash())
 
     // create a middleware for each and every route on ./app.js
     app.use((req,res,next) => {
+        // add this line for checking whether user is logged in or not
+        res.locals.currentUser = req.user
+        // check session 
+         console.log(req.session)
+
         res.locals.success = req.flash('success')
         res.locals.error = req.flash('error')
         next()

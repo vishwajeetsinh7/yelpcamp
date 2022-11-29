@@ -1,5 +1,6 @@
 <% layout('./layouts/boilerplate') %>
 
+
 <div class="row">
     <div class="col-6">
         <div class="card" style="width: 18rem;">
@@ -10,15 +11,19 @@
             </div>
             <ul class="list-group list-group-flush">
               <li class="list-group-item text-muted"><%= campground.location %></li>
+              <li class="list-group-item ">Submitted BY: <%= campground.author.username %></li>
               <li class="list-group-item">$<%= campground.price %>/night</li>
            
             </ul>
+            <% if(currentUser &&  campground.author.equals(currentUser._id)){ %> 
             <div class="card-body">
               <a href="/campgrounds/<%=campground._id %>/edit" class="card-link btn btn-warning">Edit</a>
               <form action="/campgrounds/<%=campground._id%>?_method=DELETE"  method="POST" class="d-inline">
                 <button class="btn btn-danger">Delete</button>
             </form>
             </div>
+            <%} %>
+
             <div class="card-footer text-muted">
                 3 days ago
             </div>
@@ -26,7 +31,9 @@
           
     </div>
     <div class="col-6">
+      <% if(currentUser) { %>
       <h2>Leave A ReView.</h2>
+
           <form action="/campgrounds/<%=campground._id%>/reviews" method="post" class="mb-3 validated-form" novalidate>
             <div class="mb-3">
               <label for="range" class="form-label">Rating</label>
@@ -41,15 +48,21 @@
             </div>
             <button class="btn btn-success">Submit</button>
           </form>
-          <% for (let review of campground.reviews){%>
+          <%}%>
+          
+          <% for (let r of campground.reviews){%>
           <div class="card mb-3">
           <div class="card-body">
-            <h5 class="card-title">Rating: <%=review.rating%></h5>
-              <p>  <%= review.body %></p>
+            <h5 class="card-title">Rating: <%=r.rating%></h5>
+            <% let vish = r.author %>  
+            <h6 class="card-subtitle mb-2 text-muted">BY: <%=vish.username%> </h6>
+              <p>  <%= r.body %></p>
 
-              <form action="/campgrounds/<%=campground._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+              <% if(currentUser &&  vish.equals(currentUser._id)){ %> 
+              <form action="/campgrounds/<%=campground._id%>/reviews/<%=r._id%>?_method=DELETE" method="POST">
                   <button class="btn btn-danger btn-sm">Delete</button>
-              </form>
+                </form>
+                <% } %>
 
             </div>
           </div>

@@ -1,0 +1,48 @@
+const User = require('../models/user')
+
+
+module.exports.renderRegsiter = (req,res) => {
+    res.render('users/register')
+}
+
+
+module.exports.register = async (req,res,next) => {
+    try{
+        const {email, username, password} = req.body
+        const user = new User({email, username})
+        const registeredUser  = await User.register(user,password)
+        req.login(registeredUser, err => {
+            if(err) return next(err)
+            req.flash('success', 'Welcome to yelpcamp')
+            res.redirect('/campgrounds')
+        })
+        console.log(registeredUser)
+    
+    }catch(e){
+            req.flash('error', e.message) 
+            res.redirect('register')
+    }
+
+}
+
+
+module.exports.renderLogin =  (req,res) => {
+    res.render('users/login')
+}
+
+module.exports.login = (req,res) => {
+    req.flash('success', `welcome back!`)
+    const redirectUrl = req.session.returnTo || '/campgrounds'
+    delete req.session.returnTo
+                            
+    console.log('vishwajeet', redirectUrl)
+    res.redirect(redirectUrl)
+}
+
+module.exports.logout = (req,res, next) => {
+    req.logout(function(err){
+        if(err) {return next(err)}
+        req.flash('success', 'logged you out susccessfully')
+        res.redirect('/')
+    })
+}

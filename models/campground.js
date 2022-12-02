@@ -4,10 +4,20 @@ const User = require('./user')
 const Schema = mongoose.Schema
 
 
+const ImageSchema = new Schema({
+    url: String, 
+    filename: String
+})
+
+ImageSchema.virtual('thumbnail').get(function async(){
+   return  this.url.replace('/upload/', '/upload/w_100,ar_1.0,c_fill/r_max/')
+})
+
+
 const campgroundSchema = new Schema({
     title: String, 
     price: Number,
-    image: String,
+    images: [ImageSchema],
     description: String, 
     location: String, 
     author: {

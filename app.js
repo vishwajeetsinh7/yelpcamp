@@ -14,6 +14,10 @@ const port = process.env.PORT || 3000
 const campgroundRoutes = require('./routes/campground')
 const reviewRoutes = require('./routes/reviews')
 const userRoutes  = require('./routes/users')
+const dbUrl = process.env.DB_URL
+
+const MongoStore = require('connect-mongo');
+
 
 
 const Joi = require('joi')
@@ -21,6 +25,8 @@ const methodOverride = require('method-override')
 app.use(methodOverride('_method'))  
 
 const User = require('./models/user')
+
+const helmet = require('helmet')
 
 // used for passport.js
 const passport = require('passport')
@@ -30,7 +36,7 @@ const localStrategy = require('passport-local')
 
 
 
-const uri = "mongodb+srv://vishwajeet:vishwajeet@quizzapp.8cryywh.mongodb.net/test"
+const uri = dbUrl
 // const uri = "mongodb://0.0.0.0"
 async function connect(){
     try{
@@ -62,12 +68,32 @@ app.use(express.urlencoded({extended:true}))
 
 app.use(express.static(path.join(__dirname, 'public')))
 
+const mongoSanitize = require('express-mongo-sanitize')
+app.use(mongoSanitize({
+    replaceWith: '_'
+}))
+
+const store = new MongoStore({
+    url: dbUrl,
+    secret: 'thisshouldbeabettersecret',
+    touchAfter: 24 * 60 * 60
+})
+
+store.on('error', function(e){
+    console.log('Session Store Error', e)
+})
+
 const sessionConfig = {
+    store,
+    // change your default name
+    name: 'session',
     secret: 'thisshouldbeabettersecret!', 
     resave: false, 
     saveUninitialized: true,
     cookie:{
         httpOnly: true,
+        // don't use this on development it's break thing
+        // secure: true,
         expires: Date.now() + 1000 * 60 * 60  * 24 * 7,
         maxAge: 1000 * 60 * 60  * 24 * 7
     }
@@ -88,6 +114,7 @@ app.use(flash())
 
     // create a middleware for each and every route on ./app.js
     app.use((req,res,next) => {
+        console.log(req.query)
         // add this line for checking whether user is logged in or not
         res.locals.currentUser = req.user
         // check session 
@@ -101,12 +128,58 @@ app.use(flash())
 app.use('/', userRoutes)
 app.use('/campgrounds', campgroundRoutes)
 app.use('/campgrounds/:id/reviews', reviewRoutes)
-
-
-
 app.get('/', (req, res) => {
     res.render('home')
 })
+
+app.use(helmet());
+
+
+const scriptSrcUrls = [
+    "https://stackpath.bootstrapcdn.com",
+    "https://api.tiles.mapbox.com",
+    "https://api.mapbox.com",
+    "https://kit.fontawesome.com",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+];
+const styleSrcUrls = [
+    "https://kit-free.fontawesome.com",
+    "https://stackpath.bootstrapcdn.com",
+    "https://api.mapbox.com",
+    "https://api.tiles.mapbox.com",
+    "https://fonts.googleapis.com",
+    "https://use.fontawesome.com",
+];
+const connectSrcUrls = [
+    "https://api.mapbox.com",
+    "https://*.tiles.mapbox.com",
+    "https://events.mapbox.com",
+];
+const fontSrcUrls = [];
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: [],
+            connectSrc: ["'self'", ...connectSrcUrls],
+            scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+            styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+            workerSrc: ["'self'", "blob:"],
+            childSrc: ["blob:"],
+            objectSrc: [],
+            imgSrc: [
+                "'self'",
+                "blob:",
+                "data:",
+                "https://res.cloudinary.com/douqbebwk/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT! 
+                "https://images.unsplash.com",
+            ],
+            fontSrc: ["'self'", ...fontSrcUrls],
+        },
+    })
+);
+
+
 
 
 

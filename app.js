@@ -18,6 +18,8 @@ const dbUrl = process.env.DB_URL
 
 const MongoStore = require('connect-mongo');
 
+const secret = process.env.SECRET || 'thisshouldbeabettersecret'
+
 
 
 const Joi = require('joi')
@@ -73,9 +75,9 @@ app.use(mongoSanitize({
     replaceWith: '_'
 }))
 
-const store = new MongoStore({
-    url: dbUrl,
-    secret: 'thisshouldbeabettersecret',
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    secret: secret,
     touchAfter: 24 * 60 * 60
 })
 
@@ -87,7 +89,7 @@ const sessionConfig = {
     store,
     // change your default name
     name: 'session',
-    secret: 'thisshouldbeabettersecret!', 
+    secret: secret, 
     resave: false, 
     saveUninitialized: true,
     cookie:{
